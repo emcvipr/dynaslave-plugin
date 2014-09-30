@@ -2,16 +2,21 @@
 
 set -x
 
-BUILDS_HOME=/apps/jenkins
-BUILDS_URL=http://jenkins.hostname.com
+#BUILDS_HOME=/apps/jenkins
+BUILDS_HOME=/home/vagrant
+#BUILDS_URL=http://jenkins.hostname.com
+BUILDS_URL=http://10.6.154.240:8080
 # Change the HOST prefix from ds- if you set it to something different in the Jenkins system config.
-HOST=ds-$(hostname)
+#HOST=ds-$(hostname)
+HOST=dynaslave-$(hostname)
 SLAVE_DIR=${BUILDS_HOME}/slave
 SLAVE_TOOLS=${BUILDS_HOME}/tools
 SLAVE_JAR=${BUILDS_URL}/jnlpJars/slave.jar
 JNLP_URL="${BUILDS_URL}/computer/${HOST}/slave-agent.jnlp"
 
-setup_java() { 
+LOG=${BUILDS_HOME}/jenkins-${HOST}.log
+
+setup_java() {
     JAVA_HOME=${SLAVE_TOOLS}/jdk1.6.0_31
     export JAVA_HOME
     echo "Using ${JAVA_HOME} as JAVA_HOME"
@@ -28,16 +33,22 @@ refresh_slave_jar() {
 
 launch_slave() {
     pkill -f slave.jar
-    rotate_logs
-    ${JAVA_HOME}/bin/java -jar ${SLAVE_TOOLS}/slave.jar \
-      -jnlpUrl ${JNLP_URL} > ${LOG} 2>&1 &
+    #rotate_logs
+    #${JAVA_HOME}/bin/java -jar ${SLAVE_TOOLS}/slave.jar \
+    #  -jnlpUrl ${JNLP_URL} > ${LOG} 2>&1 &
+    java -jar ${SLAVE_TOOLS}/slave.jar \
+      -jnlpUrl ${JNLP_URL} > ${LOG} &
+    JAVA_PID=$!
     echo Slave started as process $$
+    echo "java process id forked is: " ${JAVA_PID}
+    wait $JAVA_PID
 }
 
 main() {
     [[ -d ${BUILDS_HOME}/slave ]] && mkdir -p ${BUILDS_HOME}/slave
-    setup_java
+    #setup_java
     launch_slave
 }
 
 main
+

@@ -9,26 +9,39 @@ then
     cat /proc/$$/cmdline
     exit 65
 fi
+#slave_node=$1
+slave_node_conn=$2@$1
 slave_node=$1
 remote_user=$2
 
-master_node="jenkins.hostname.com"
-keyfile="/home/jenkins/.ssh/id_rsa"
+runHomeDir="/apps/jenkins"
 
-remote_builds_dir=/apps/jenkins
+master_node="10.6.154.240"
+#keyfile="/home/jenkins/.ssh/id_rsa"
+keyfile="${runHomeDir}/keys/vagrant-pubkey"
+
+#remote_builds_dir=/apps/jenkins
+remote_builds_dir=/home/vagrant
 
 # TODO this isn't really needed since start-remote-dynaslave does a pkill as well
 echo "killing old slave processes"
-ssh -l ${remote_user} -i ${keyfile} ${slave_node} "pgrep -fl slave.jar; pkill -f slave.jar"
+#ssh -l ${remote_user} -i ${keyfile} ${slave_node} "pgrep -fl slave.jar; pkill -f slave.jar"
+ssh -l ${remote_user} -i ${keyfile} ${slave_node_conn} "pgrep -fl slave.jar; pkill -f slave.jar"
 
 if [ ${slave_node} != ${master_node} ]
 then
     echo "updating tools"
-    ssh -l ${remote_user} -i ${keyfile} ${slave_node} "chmod 755 \$HOME"
+    #ssh -l ${remote_user} -i ${keyfile} ${slave_node} "chmod 755 \$HOME"
+    ssh -l ${remote_user} -i ${keyfile} ${slave_node_conn} "chmod 755 \$HOME"
+    #rsync -au -c -v --delete \
+        #-e "ssh -l ${remote_user} -i ${keyfile}" \
+        #/apps/jenkins/tools ${remote_user}@${slave_node}:${remote_builds_dir}/
     rsync -au -c -v --delete \
         -e "ssh -l ${remote_user} -i ${keyfile}" \
-        /apps/jenkins/tools ${remote_user}@${slave_node}:${remote_builds_dir}/
+        ${runHomeDir}/tools ${remote_user}@${slave_node}:${remote_builds_dir}/
 fi
 
 echo "launching remote slave process"
-ssh -l ${remote_user} -i ${keyfile} ${slave_node} ${remote_builds_dir}/tools/start-dynaslave
+#ssh -l ${remote_user} -i ${keyfile} ${slave_node} ${remote_builds_dir}/tools/start-dynaslave
+ssh -l ${remote_user} -i ${keyfile} ${slave_node_conn} ${remote_builds_dir}/tools/start-dynaslave
+

@@ -26,7 +26,8 @@ public class DynaSlavePlugin extends Plugin {
 
     private String defaultPrefix = "dynaslave";
     private String defaultLabels = "";
-    private String defaultRemoteSlaveUser = "jenkins";
+    //private String defaultRemoteSlaveUser = "jenkins";
+    private String defaultRemoteSlaveUser = "vagrant";
     private String defaultBaseLauncherCommand = "/apps/jenkins/tools/start-remote-dynaslave";
     private String defaultIdleTerminationMinutes = "30";
 
@@ -72,6 +73,18 @@ public class DynaSlavePlugin extends Plugin {
             }
 
             labels = defaultLabels + " " + Util.fixNull(labels);
+
+            //bug does not recogonize the global variable value
+            System.out.println("#######################################################################");
+            System.out.println("Going to register the dynamic slave node with Jenkins server");
+            System.out.println("defaultPrefix = " + defaultPrefix );
+            System.out.println("defaultLabels = " + defaultLabels );
+            System.out.println("defaultRemoteSlaveUser = " + defaultRemoteSlaveUser );
+            System.out.println("defaultBaseLauncherCommand = " + defaultBaseLauncherCommand );
+            System.out.println("defaultIdleTerminationMinutes = " + defaultIdleTerminationMinutes );
+            defaultRemoteSlaveUser = "vagrant";
+            System.out.println("defaultRemoteSlaveUser: after the hack = " + defaultRemoteSlaveUser );
+            System.out.println("#######################################################################");
 
             DynaSlave slave = new DynaSlave(name, "Dynamic slave at " + hostname + ": " + description,
                     remoteFsRoot, String.valueOf(executors), labels, hostname, defaultRemoteSlaveUser,
